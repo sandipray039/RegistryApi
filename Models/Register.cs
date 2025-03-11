@@ -17,6 +17,6 @@ namespace RegistryApi.Models
         public string Password { get; set; }
 
         [Required]
-        public int LocationId { get; set; }
+        public string LocationId { get; set; }
     }
 }

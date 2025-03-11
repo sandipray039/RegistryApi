@@ -10,7 +10,7 @@ namespace RegistryApi.Models
         public int UserId { get; set; }
 
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        public ApplicationUser User { get; set; }
         public DateTime? CheckInTime { get; set; }
         public DateTime? CheckOutTime { get; set; }
         public DateTime? BreakStart { get; set; }
@@ -18,7 +18,7 @@ namespace RegistryApi.Models
         public double TotalHours { get; set; } // Computed at checkout
         public DateTime Date { get; set; } = DateTime.UtcNow;
 
-        public int LocationId { get; set; }
+        public string LocationId { get; set; }
         [ForeignKey("LocationId")]
         public Location Location { get; set; }
 
