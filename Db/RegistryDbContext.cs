@@ -29,7 +29,7 @@ namespace RegistryApi.Db
 
             // Attendence Relationships
             modelBuilder.Entity<Attendence>()
-                .HasOne(a => a.User)
+                .HasOne(a => a.ApplicationUser)
                 .WithMany(u => u.Attendences)
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
