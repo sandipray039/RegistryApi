@@ -19,7 +19,7 @@ namespace RegistryApi.Models
         [Required]
         public double GeofenceRadius { get; set; } // In meters
 
-        public ICollection<ApplicationUser> Users { get; set; }
-        public ICollection<Attendence> Attendances { get; set; }
+        public ICollection<ApplicationUser> ApplicationUsers { get; set; } = new List<ApplicationUser>();  // ✅ Explicit
+        public ICollection<Attendence> Attendances { get; set; } = new List<Attendence>();
     }
 }

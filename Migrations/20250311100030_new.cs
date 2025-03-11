@@ -6,17 +6,16 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RegistryApi.Migrations
 {
     /// <inheritdoc />
-    public partial class first : Migration
+    public partial class @new : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Location",
+                name: "Locations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Latitude = table.Column<double>(type: "float", nullable: false),
                     Longitude = table.Column<double>(type: "float", nullable: false),
@@ -24,46 +23,30 @@ namespace RegistryApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Location", x => x.Id);
+                    table.PrimaryKey("PK_Locations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Roles",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Roles", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Users",
+                name: "ApplicationUsers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LocationId = table.Column<int>(type: "int", nullable: false),
+                    LocationId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_ApplicationUsers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_Location_LocationId",
+                        name: "FK_ApplicationUsers_Locations_LocationId",
                         column: x => x.LocationId,
-                        principalTable: "Location",
+                        principalTable: "Locations",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -79,39 +62,27 @@ namespace RegistryApi.Migrations
                     BreakEnd = table.Column<DateTime>(type: "datetime2", nullable: true),
                     TotalHours = table.Column<double>(type: "float", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LocationId = table.Column<int>(type: "int", nullable: false),
-                    LocationId1 = table.Column<int>(type: "int", nullable: true),
-                    UserId1 = table.Column<int>(type: "int", nullable: true)
+                    LocationId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Attendances", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Attendances_Location_LocationId",
-                        column: x => x.LocationId,
-                        principalTable: "Location",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Attendances_Location_LocationId1",
-                        column: x => x.LocationId1,
-                        principalTable: "Location",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Attendances_Users_UserId",
+                        name: "FK_Attendances_ApplicationUsers_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "ApplicationUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Attendances_Users_UserId1",
-                        column: x => x.UserId1,
-                        principalTable: "Users",
-                        principalColumn: "Id");
+                        name: "FK_Attendances_Locations_LocationId",
+                        column: x => x.LocationId,
+                        principalTable: "Locations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Break",
+                name: "Breaks",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -123,17 +94,17 @@ namespace RegistryApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Break", x => x.Id);
+                    table.PrimaryKey("PK_Breaks", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Break_Users_UserId",
+                        name: "FK_Breaks_ApplicationUsers_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "ApplicationUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Notification",
+                name: "Notifications",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -145,11 +116,11 @@ namespace RegistryApi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Notification", x => x.Id);
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Notification_Users_UserId",
+                        name: "FK_Notifications_ApplicationUsers_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "ApplicationUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -169,12 +140,17 @@ namespace RegistryApi.Migrations
                 {
                     table.PrimaryKey("PK_Reports", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Reports_Users_UserId",
+                        name: "FK_Reports_ApplicationUsers_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "ApplicationUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ApplicationUsers_LocationId",
+                table: "ApplicationUsers",
+                column: "LocationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Attendances_LocationId",
@@ -182,39 +158,24 @@ namespace RegistryApi.Migrations
                 column: "LocationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Attendances_LocationId1",
-                table: "Attendances",
-                column: "LocationId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Attendances_UserId",
                 table: "Attendances",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Attendances_UserId1",
-                table: "Attendances",
-                column: "UserId1");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Break_UserId",
-                table: "Break",
+                name: "IX_Breaks_UserId",
+                table: "Breaks",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notification_UserId",
-                table: "Notification",
+                name: "IX_Notifications_UserId",
+                table: "Notifications",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reports_UserId",
                 table: "Reports",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_LocationId",
-                table: "Users",
-                column: "LocationId");
         }
 
         /// <inheritdoc />
@@ -224,22 +185,19 @@ namespace RegistryApi.Migrations
                 name: "Attendances");
 
             migrationBuilder.DropTable(
-                name: "Break");
+                name: "Breaks");
 
             migrationBuilder.DropTable(
-                name: "Notification");
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "Reports");
 
             migrationBuilder.DropTable(
-                name: "Roles");
+                name: "ApplicationUsers");
 
             migrationBuilder.DropTable(
-                name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "Location");
+                name: "Locations");
         }
     }
 }

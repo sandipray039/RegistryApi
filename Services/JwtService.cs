@@ -2,53 +2,50 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using RegistryApi.Models;
-using System.Threading.Tasks;
 
 namespace RegistryApi.Services
 {
     public class JwtService
     {
-        private readonly IConfiguration _configuration;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly string _key;
+        private readonly string _issuer;
+        private readonly string _audience;
 
-        public JwtService(IConfiguration configuration, UserManager<ApplicationUser> userManager)
+        public JwtService(IConfiguration configuration)
         {
-            _configuration = configuration;
-            _userManager = userManager;
+            _key = configuration["Jwt:key"]; // Ensure key matches appsettings.json
+            _issuer = configuration["Jwt:Issuer"];
+            _audience = configuration["Jwt:Audience"];
         }
 
-        public async Task<string> GenerateToken(ApplicationUser user)
+        public string GenerateToken(ApplicationUser user)
         {
-            var userRoles = await _userManager.GetRolesAsync(user);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_key);
 
-            var claims = new List<Claim>
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Name),
+                    new Claim(ClaimTypes.Role, user.Role),
+                    new Claim("LocationId", user.LocationId ?? string.Empty)  // Custom claim for location
+                }),
+                Expires = DateTime.UtcNow.AddHours(2), // Token valid for 2 hours
+                Issuer = _issuer,
+                Audience = _audience,
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature
+                )
             };
 
-            foreach (var role in userRoles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

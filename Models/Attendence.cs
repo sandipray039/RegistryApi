@@ -10,7 +10,7 @@ namespace RegistryApi.Models
         public int UserId { get; set; }
 
         [ForeignKey("UserId")]
-        public ApplicationUser User { get; set; }
+        public ApplicationUser ApplicationUser { get; set; }
         public DateTime? CheckInTime { get; set; }
         public DateTime? CheckOutTime { get; set; }
         public DateTime? BreakStart { get; set; }

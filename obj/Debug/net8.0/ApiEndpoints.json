@@ -27,11 +27,6 @@
         "Name": "model",
         "Type": "RegistryApi.Models.Register",
         "IsRequired": true
-      },
-      {
-        "Name": "role",
-        "Type": "System.String",
-        "IsRequired": false
       }
     ],
     "ReturnTypes": []

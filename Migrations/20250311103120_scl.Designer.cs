@@ -12,8 +12,8 @@ using RegistryApi.Db;
 namespace RegistryApi.Migrations
 {
     [DbContext(typeof(RegistryDbContext))]
-    [Migration("20250303154124_first")]
-    partial class first
+    [Migration("20250311103120_scl")]
+    partial class scl
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,7 +50,45 @@ namespace RegistryApi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notification");
+                    b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("RegistryApi.Models.ApplicationUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LocationId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.ToTable("ApplicationUsers");
                 });
 
             modelBuilder.Entity("RegistryApi.Models.Attendence", b =>
@@ -76,11 +114,8 @@ namespace RegistryApi.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("LocationId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("LocationId1")
-                        .HasColumnType("int");
+                    b.Property<string>("LocationId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<double>("TotalHours")
                         .HasColumnType("float");
@@ -88,18 +123,11 @@ namespace RegistryApi.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId1")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("LocationId");
 
-                    b.HasIndex("LocationId1");
-
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("Attendances");
                 });
@@ -128,16 +156,13 @@ namespace RegistryApi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Break");
+                    b.ToTable("Breaks");
                 });
 
             modelBuilder.Entity("RegistryApi.Models.Location", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<double>("GeofenceRadius")
                         .HasColumnType("float");
@@ -154,7 +179,7 @@ namespace RegistryApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Location");
+                    b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("RegistryApi.Models.Report", b =>
@@ -186,71 +211,9 @@ namespace RegistryApi.Migrations
                     b.ToTable("Reports");
                 });
 
-            modelBuilder.Entity("RegistryApi.Models.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roles");
-                });
-
-            modelBuilder.Entity("RegistryApi.Models.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("LocationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LocationId");
-
-                    b.ToTable("Users");
-                });
-
             modelBuilder.Entity("Notification", b =>
                 {
-                    b.HasOne("RegistryApi.Models.User", "User")
+                    b.HasOne("RegistryApi.Models.ApplicationUser", "User")
                         .WithMany("Notifications")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -259,27 +222,28 @@ namespace RegistryApi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("RegistryApi.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("RegistryApi.Models.Location", "Location")
+                        .WithMany("ApplicationUsers")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Location");
+                });
+
             modelBuilder.Entity("RegistryApi.Models.Attendence", b =>
                 {
                     b.HasOne("RegistryApi.Models.Location", "Location")
-                        .WithMany()
-                        .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("RegistryApi.Models.Location", null)
                         .WithMany("Attendances")
-                        .HasForeignKey("LocationId1");
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RegistryApi.Models.User", "User")
-                        .WithMany()
+                    b.HasOne("RegistryApi.Models.ApplicationUser", "User")
+                        .WithMany("Attendences")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("RegistryApi.Models.User", null)
-                        .WithMany("Attendences")
-                        .HasForeignKey("UserId1");
 
                     b.Navigation("Location");
 
@@ -288,7 +252,7 @@ namespace RegistryApi.Migrations
 
             modelBuilder.Entity("RegistryApi.Models.Break", b =>
                 {
-                    b.HasOne("RegistryApi.Models.User", "User")
+                    b.HasOne("RegistryApi.Models.ApplicationUser", "User")
                         .WithMany("Breaks")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -299,7 +263,7 @@ namespace RegistryApi.Migrations
 
             modelBuilder.Entity("RegistryApi.Models.Report", b =>
                 {
-                    b.HasOne("RegistryApi.Models.User", "User")
+                    b.HasOne("RegistryApi.Models.ApplicationUser", "User")
                         .WithMany("Reports")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -308,25 +272,7 @@ namespace RegistryApi.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("RegistryApi.Models.User", b =>
-                {
-                    b.HasOne("RegistryApi.Models.Location", "Location")
-                        .WithMany("Users")
-                        .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Location");
-                });
-
-            modelBuilder.Entity("RegistryApi.Models.Location", b =>
-                {
-                    b.Navigation("Attendances");
-
-                    b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("RegistryApi.Models.User", b =>
+            modelBuilder.Entity("RegistryApi.Models.ApplicationUser", b =>
                 {
                     b.Navigation("Attendences");
 
@@ -335,6 +281,13 @@ namespace RegistryApi.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("Reports");
+                });
+
+            modelBuilder.Entity("RegistryApi.Models.Location", b =>
+                {
+                    b.Navigation("ApplicationUsers");
+
+                    b.Navigation("Attendances");
                 });
 #pragma warning restore 612, 618
         }
