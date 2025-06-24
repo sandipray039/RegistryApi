@@ -75,6 +75,16 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+// CORS setup (before app.Build())
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -85,10 +95,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Global error handling middleware (optional)
 app.UseExceptionHandler("/error");
 
 app.UseHttpsRedirection();
+
+// 🔽 Apply CORS before Auth
+app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
 

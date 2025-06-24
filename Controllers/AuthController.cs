@@ -27,20 +27,20 @@ namespace RegistryApi.Controllers
         [Authorize(Roles = "Admin")] // ✅ Only Admin can register employees
         public async Task<IActionResult> Register([FromBody] Register model)
         {
-            // 🔹 Check if the user already exists
+            
             var existingUser = await _context.ApplicationUsers.FirstOrDefaultAsync(u => u.Email == model.Email);
             if (existingUser != null)
                 return BadRequest("User already exists.");
 
-            // 🔹 Ensure that the assigned Location exists in the database
+            
             var locationExists = await _context.Locations.AnyAsync(l => l.Id == model.LocationId);
             if (!locationExists)
                 return BadRequest("Invalid Location ID. Please assign an existing location.");
 
-            // 🔹 Hash the password
+            
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
 
-            // 🔹 Create a new employee with the assigned location
+            
             var newUser = new ApplicationUser
             {
                 Name = model.Name,
