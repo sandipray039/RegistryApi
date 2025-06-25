@@ -74,7 +74,26 @@ namespace RegistryApi.Controllers
             return Ok(records.Select(ToDto));
         }
 
-        // ✅ Admin: Get attendance of all users for a specific day
+        [HttpGet("get-attendance-of-today")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllAttendanceOfToday()
+        {
+           
+            var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            var indiaNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, indiaTimeZone);
+            var today = indiaNow.Date;
+
+            var records = await _context.Attendances
+                .Include(a => a.ApplicationUser)
+                .Include(a => a.Location)
+                .Where(a => a.Date.Date == today)
+                .ToListAsync();
+
+            return Ok(records.Select(ToDto));
+        }
+
+
+       
         [HttpGet("admin/day")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllAttendanceByDay([FromQuery] string date)

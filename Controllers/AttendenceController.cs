@@ -40,8 +40,10 @@ namespace RegistryApi.Controllers
             // 🔹 Check if the employee is within 500m of their assigned location
             if (!IsWithinRadius(officeLat, officeLng, request.Latitude, request.Longitude, 500))
                 return BadRequest("You are too far from your assigned location to check in.");
+            var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, indiaTimeZone);
 
-            var today = DateTime.UtcNow.Date;
+            var today = indiaTime.Date;
 
             // 🔹 Prevent multiple check-ins on the same day
             var existingAttendance = await _context.Attendances
@@ -50,12 +52,15 @@ namespace RegistryApi.Controllers
             if (existingAttendance != null)
                 return BadRequest("You have already checked in today.");
 
+            //var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            //var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, indiaTimeZone);
+
             var attendance = new Attendence
             {
                 UserId = userId,
                 LocationId = user.LocationId,
-                CheckInTime = DateTime.UtcNow,
-                Date = today
+                CheckInTime = indiaTime,
+                Date = indiaTime.Date
             };
 
             _context.Attendances.Add(attendance);
@@ -70,7 +75,11 @@ namespace RegistryApi.Controllers
         public async Task<IActionResult> CheckOut()
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var today = DateTime.UtcNow.Date;
+
+            var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                            TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
+
+            var today = indiaTime.Date;
 
             var attendance = await _context.Attendances
                 .FirstOrDefaultAsync(a => a.UserId == userId && a.Date.Date == today);
@@ -81,12 +90,13 @@ namespace RegistryApi.Controllers
             if (attendance.CheckOutTime != null)
                 return BadRequest("You have already checked out.");
 
-            attendance.CheckOutTime = DateTime.UtcNow;
+            attendance.CheckOutTime = indiaTime;
             attendance.TotalHours = (attendance.CheckOutTime - attendance.CheckInTime)?.TotalHours ?? 0;
 
             await _context.SaveChangesAsync();
             return Ok("Check-out successful.");
         }
+
 
         // ✅ Start Break
         [HttpPost("break/start")]
@@ -94,7 +104,11 @@ namespace RegistryApi.Controllers
         public async Task<IActionResult> StartBreak()
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var today = DateTime.UtcNow.Date;
+
+            var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                            TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
+
+            var today = indiaTime.Date;
 
             var attendance = await _context.Attendances
                 .FirstOrDefaultAsync(a => a.UserId == userId && a.Date.Date == today);
@@ -102,14 +116,19 @@ namespace RegistryApi.Controllers
             if (attendance == null)
                 return BadRequest("No check-in record found for today.");
 
+            if (attendance.CheckOutTime != null)
+                return BadRequest("You are already checked out. Break not allowed.");
+
             if (attendance.BreakStart != null)
                 return BadRequest("Break already started.");
 
-            attendance.BreakStart = DateTime.UtcNow;
+            attendance.BreakStart = indiaTime;
             await _context.SaveChangesAsync();
 
             return Ok("Break started.");
         }
+
+
 
         // ✅ End Break
         [HttpPost("break/end")]
@@ -117,7 +136,11 @@ namespace RegistryApi.Controllers
         public async Task<IActionResult> EndBreak()
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var today = DateTime.UtcNow.Date;
+
+            var indiaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+                            TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
+
+            var today = indiaTime.Date;
 
             var attendance = await _context.Attendances
                 .FirstOrDefaultAsync(a => a.UserId == userId && a.Date.Date == today);
@@ -125,14 +148,19 @@ namespace RegistryApi.Controllers
             if (attendance == null)
                 return BadRequest("No check-in record found for today.");
 
+            if (attendance.CheckOutTime != null)
+                return BadRequest("You are already checked out. Break end not allowed.");
+
             if (attendance.BreakStart == null || attendance.BreakEnd != null)
                 return BadRequest("Invalid break end request.");
 
-            attendance.BreakEnd = DateTime.UtcNow;
+            attendance.BreakEnd = indiaTime;
             await _context.SaveChangesAsync();
 
             return Ok("Break ended.");
         }
+
+
 
 
 
