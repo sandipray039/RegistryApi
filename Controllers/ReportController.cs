@@ -38,6 +38,30 @@ namespace RegistryApi.Controllers
             };
         }
 
+        [HttpGet("my/all")]
+        [Authorize(Roles = "Employee")]
+        public async Task<IActionResult> GetAllMyAttendance()
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+                var attendances = await _context.Attendances
+                    .Where(a => a.UserId == userId)
+                    .Include(a => a.Location)
+                    .OrderByDescending(a => a.Date)
+                    .ToListAsync();
+
+                var result = attendances.Select(a => ToDto(a));
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching attendance.", error = ex.Message });
+            }
+        }
+
         // ✅ Get own attendance for a specific day
         [HttpGet("my/day")]
         [Authorize(Roles = "Employee")]

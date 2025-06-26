@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RegistryApi.Db;
+using RegistryApi.Dtos;
+using RegistryApi.Models;
 
 namespace RegistryApi.Controllers
 {
@@ -31,5 +33,37 @@ namespace RegistryApi.Controllers
                 return StatusCode(500, new { message = "An error occured while fetching locations", error = ex.Message });
             }
         }
+        [HttpPost("add-location")]
+        [Authorize(Roles ="Admin")]
+        public async Task<IActionResult> AddLocation(LocationDto data)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var location = new Location
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = data.Name,
+                    Latitude = data.Latitude,
+                    Longitude = data.Longitude,
+                    GeofenceRadius = data.GeofenceRadius,
+
+                };
+
+                db.Locations.Add(location);
+              await  db.SaveChangesAsync();
+
+                return Ok(new { message = "location added succesfully", location });
+            }
+            catch(Exception err)
+            {
+                return StatusCode(500, new { message = "an errorr occured", err.Message });
+            }
+        }
+
+        
     }
 }
